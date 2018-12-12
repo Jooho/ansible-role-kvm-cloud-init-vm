@@ -5,7 +5,7 @@
   delegate_to: localhost
   ignore_errors: yes
   register: add_known_host
-  until: "{{add_known_host is succeeded}}"
+  until: "{{ add_known_host is succeeded }}"
   delay: 1
 
 - name: Remove MAC from eth0
@@ -13,7 +13,7 @@
   delegate_to: localhost
   ignore_errors: yes
   register: remove_mac
-  until: "{{remove_mac is succeeded}}"
+  until: "{{ remove_mac is succeeded }}"
   delay: 5
 
 # Too slow to start up after sysprep *(Reference only)*

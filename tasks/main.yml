@@ -11,8 +11,6 @@
 - name: System Prep for Clone
   import_tasks: system-prep.yml
 
-
-
 # TEST
 - name: VM is running
   shell: "virsh -c qemu:///system list | grep {{ vm_name }} | grep running | wc -l"
@@ -20,9 +18,8 @@
   register: vm_state
   failed_when: vm_state.stdout != '1'
 
-
 - name: Check VM access
-  shell: "ping -c 1 {{vm_ip.stdout}}"
+  shell: "ping -c 1 {{ vm_ip.stdout }}"
   delegate_to: "{{ kvm_install_host }}"
   register: vm_access
   failed_when: vm_access.rc == 1

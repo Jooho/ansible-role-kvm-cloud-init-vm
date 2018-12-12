@@ -47,9 +47,9 @@
   copy: 
     dest: "{{ cloud_init_meta_data }}"
     content: |
-      instance-id: {{vm_name}}
+      instance-id: {{ vm_name }}
       hostname: {{ vm_hostname }}
-      local-hostname: {{ vm_local_hostname}}
+      local-hostname: {{ vm_local_hostname }}
   become: yes
   delegate_to: "{{ kvm_install_host }}"
 
@@ -104,7 +104,7 @@
   delegate_to: "{{ kvm_install_host }}"
 
 - name: Clean up cloud init files
-  file: state=absent path="{{item}}"
+  file: state=absent path="{{ item }}"
   with_items:
   - "{{ cloud_init_user_data }}"
   - "{{ cloud_init_iso_image }}"
