@@ -1,0 +1,23 @@
+---
+
+- name: Add Known host
+  shell: "ssh-keyscan -H {{ vm_ip.stdout }}  >> ~/.ssh/known_hosts"
+  delegate_to: localhost
+  ignore_errors: yes
+  register: add_known_host
+  until: "{{add_known_host is succeeded}}"
+  delay: 1
+
+- name: Remove MAC from eth0
+  shell: "ssh -o StrictHostKeyChecking=no centos@{{ vm_ip.stdout }} -- sudo sed '/HWADDR/d'  -i /etc/sysconfig/network-scripts/ifcfg-eth0"
+  delegate_to: localhost
+  ignore_errors: yes
+  register: remove_mac
+  until: "{{remove_mac is succeeded}}"
+  delay: 5
+
+# Too slow to start up after sysprep *(Reference only)*
+#- name: System Prep for Cloning
+#  command: "virt-sysprep -d {{ vm_name }} --operation net-hwaddr,net-hostname,logfiles,bash-history,rh-subscription-manager "
+#  become: yes
+#  delegate_to: localhost

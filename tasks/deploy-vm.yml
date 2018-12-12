@@ -1,0 +1,113 @@
+---
+
+- name: Return ture(0) if domain exist
+  command: "virsh --connect qemu:///system dominfo {{ vm_name }}"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  register: vm_exist
+  ignore_errors: yes
+
+- name: If vm exist and vm_recreate is false, playbook fails
+  fail:
+    msg: "The vm exist and vm_recreate is false"
+  when: vm_exist.rc == 0 and not vm_recreate|bool
+
+- name: Undefine existing VM
+  command: " virsh --connect qemu:///system {{ item }} {{ vm_name }} "
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  with_items:
+  - destroy
+  - undefine
+  ignore_errors: yes
+  when: vm_exist.rc == 0 and vm_recreate|bool
+
+- name: Check if CentOS cloud-init image exist.
+  stat:
+    path: "{{ kvm_vm_pool_dir }}/{{ cloud_init_vm_image }}"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  register: cloud_init_image_exist
+
+- name: Download CentOS Cloud-init image 
+  get_url:
+    url: "{{ cloud_init_vm_image_link }}"
+    dest: "{{ kvm_vm_pool_dir }}/{{ cloud_init_vm_image }}"
+    mode: 0777
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  when: not cloud_init_image_exist.stat.exists
+
+- name: Copy cloud-init user data
+  template: "src=user-data.j2 dest={{ cloud_init_user_data }} mode=0777"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Generate cloud-init meta data
+  copy: 
+    dest: "{{ cloud_init_meta_data }}"
+    content: |
+      instance-id: {{vm_name}}
+      hostname: {{ vm_hostname }}
+      local-hostname: {{ vm_local_hostname}}
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Create root disk based on cloud init img
+  command: "qemu-img create -b {{ kvm_vm_pool_dir }}/{{ cloud_init_vm_image }} -f qcow2 {{ kvm_vm_pool_dir }}/{{ vm_name }}.qcow2 {{ vm_root_disk_size }}"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Create iso image for cloud init
+  shell: "genisoimage -output {{ cloud_init_iso_image }} -volid cidata -joliet -r {{ cloud_init_user_data }} {{ cloud_init_meta_data }} &>> {{ vm_data_dir }}/{{ vm_name }}/generate_iso_img.log"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Deploy a new VM
+  command: >
+     virt-install --import --name {{ vm_name }} --ram {{ vm_memory }}  --vcpus {{vm_cpu}}
+     --disk {{ kvm_vm_pool_dir }}/{{vm_name}}.qcow2,format=qcow2,bus=virtio --disk  {{ cloud_init_iso_image }},device=cdrom --network network:{{ vm_network_br|default('virbr0') }},model=virtio --os-type=linux --os-variant=rhel7 --noautoconsole
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Get MAC address
+  shell: >
+     virsh --connect qemu:///system dumpxml {{ vm_name }} | awk -F\' '/mac address/ {print $2}'
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  register: mac_info
+
+- name: Gather bridge device name
+  shell: >
+    virsh --connect qemu:///system net-info {{ vm_network_br | default('default') }}|grep Bridge|awk '{print $2}'
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+  register: vm_network_br_dev_name
+
+- name: Wait for IP Ready of the VM
+  wait_for:
+    path: "/var/lib/libvirt/dnsmasq/{{ vm_network_br_dev_name.stdout }}.status"
+    search_regex: "{{ mac_info.stdout }}"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Gather IP address of the VM
+  shell: >
+     grep -B1 {{ mac_info.stdout }} /var/lib/libvirt/dnsmasq/{{ vm_network_br_dev_name.stdout }}.status | head -n 1 | awk '{print $2}' | sed -e s/\"//g -e s/,//
+  register: vm_ip
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Eject CD-Rom
+  shell: "virsh --connect qemu:///system change-media {{ vm_name }} hda --eject --config"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+
+- name: Clean up cloud init files
+  file: state=absent path="{{item}}"
+  with_items:
+  - "{{ cloud_init_user_data }}"
+  - "{{ cloud_init_iso_image }}"
+  become: yes
+  delegate_to: "{{ kvm_install_host }}"
+

@@ -1,0 +1,22 @@
+# KVM config
+kvm_vm_pool_dir: /var/lib/libvirt/images
+kvm_install_host: localhost
+
+# Cloud Init Config
+vm_data_dir: /root/kvm/vms
+vm_recreate: true
+cloud_init_vm_image: CentOS-7-x86_64-GenericCloud.qcow2
+cloud_init_vm_image_link: "https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1809.qcow2"
+# Latest image is from https://cloud.centos.org/centos/7/images/
+
+cloud_init_user_data: "{{ vm_data_dir }}/{{ vm_name }}/user-data"
+cloud_init_meta_data: "{{ vm_data_dir }}/{{ vm_name }}/meta-data"
+cloud_init_iso_image: "{{ vm_data_dir }}/{{ vm_name }}/cidata.iso"
+
+vm_name: CentOS_Base
+vm_local_hostname: base.example.com
+vm_hostname: base.example.com
+vm_public_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+vm_cpu: 2
+vm_memory: 2048
+vm_root_disk_size: 20G
