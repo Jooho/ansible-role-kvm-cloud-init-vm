@@ -66,7 +66,7 @@
 - name: Deploy a new VM
   command: >
      virt-install --import --name {{ vm_name }} --ram {{ vm_memory }}  --vcpus {{vm_cpu}}
-     --disk {{ kvm_vm_pool_dir }}/{{vm_name}}.qcow2,format=qcow2,bus=virtio --disk  {{ cloud_init_iso_image }},device=cdrom --network network:{{ vm_network_br|default('virbr0') }},model=virtio --os-type=linux --os-variant=rhel7 --noautoconsole
+     --disk {{ kvm_vm_pool_dir }}/{{vm_name}}.qcow2,format=qcow2,bus=virtio --disk  {{ cloud_init_iso_image }},device=cdrom --network network:{{ vm_network_br|default('default') }},model=virtio --os-type=linux --os-variant=rhel7 --noautoconsole
   become: yes
   delegate_to: "{{ kvm_install_host }}"
 
