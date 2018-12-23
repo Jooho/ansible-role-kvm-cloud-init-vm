@@ -21,6 +21,7 @@ Role Variables
 
 | Name                     | Default value                                                                    | Requird | Description                                                |
 | ------------------------ | -------------------------------------------------------------------------------- | ------- | ---------------------------------------------------------- |
+| kvm_install_host         | localhost                                                                        | no      | The host where KVM install                                 |
 | kvm_vm_pool_dir          | /var/lib/libvirt/images                                                          | no      | The path where KVM VM images are stored                    |
 | vm_data_dir              | /root/kvm/vms                                                                    | no      | The path where VM information are stored                   |
 | vm_recreate              | true                                                                             | no      | Set false, if the same vm exist                            |
