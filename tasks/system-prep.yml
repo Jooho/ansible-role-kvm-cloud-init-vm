@@ -16,8 +16,33 @@
   until: "{{ remove_mac is succeeded }}"
   delay: 5
 
+- name: Upgrade
+  block:
+    - name: upgrade all packages
+      yum:
+        name: '*'
+        state: latest
+      become: yes
+      register: rpm_upgrade
+      async: 1800
+      poll: 0
+    
+    - name: Wait for upgrade OS
+      async_status: jid="{{ rpm_upgrade.ansible_job_id }}"
+      become: yes
+      register: jobs
+      until: jobs.finished
+      retries: 180
+      delay: 10
+    
+    - name: Reboot VMs
+      reboot:    
+      become: yes
+  when: vm_upgrade
+
 # Too slow to start up after sysprep *(Reference only)*
 #- name: System Prep for Cloning
 #  command: "virt-sysprep -d {{ vm_name }} --operation net-hwaddr,net-hostname,logfiles,bash-history,rh-subscription-manager "
 #  become: yes
 #  delegate_to: localhost
+    
