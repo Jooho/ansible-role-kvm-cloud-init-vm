@@ -25,7 +25,6 @@ Role Variables
 | kvm_vm_pool_dir          | /var/lib/libvirt/images                                                          | no      | The path where KVM VM images are stored                    |
 | vm_data_dir              | /root/kvm/vms                                                                    | no      | The path where VM information are stored                   |
 | vm_recreate              | true                                                                             | no      | Set false, if the same vm exist                            |
-| vm_upgrade               | true                                                                             | no      | Set false, if you don't want to update VM                  |
 | cloud_init_vm_image      | CentOS-7-x86_64-GenericCloud.qcow2                                               | no      | Cloud init image name                                      |
 | cloud_init_vm_image_link | https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1809.qcow2 | no      | Cloud init image download link                             |
 | cloud_init_user_data     | {{vm_data_dir}}/{{vm_name}}/user-data                                            | no      | Cloud init user data file                                  |

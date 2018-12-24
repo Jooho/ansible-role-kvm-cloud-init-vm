@@ -20,4 +20,3 @@ vm_public_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
 vm_cpu: 2
 vm_memory: 2048
 vm_root_disk_size: 20G
-vm_upgrade: true
