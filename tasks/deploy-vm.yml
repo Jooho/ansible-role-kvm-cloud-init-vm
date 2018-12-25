@@ -59,7 +59,7 @@
   delegate_to: "{{ kvm_install_host }}"
 
 - name: Create iso image for cloud init
-  shell: "genisoimage -output {{ cloud_init_iso_image }} -volid cidata -joliet -r {{ cloud_init_user_data }} {{ cloud_init_meta_data }} &>> {{ vm_data_dir }}/{{ vm_name }}/generate_iso_img.log"
+  shell: "genisoimage -output {{ cloud_init_iso_image }} -volid cidata -joliet -r {{ cloud_init_user_data }} {{ cloud_init_meta_data }}"
   become: yes
   delegate_to: "{{ kvm_install_host }}"
 
@@ -103,11 +103,11 @@
   become: yes
   delegate_to: "{{ kvm_install_host }}"
 
-- name: Clean up cloud init files
-  file: state=absent path="{{ item }}"
-  with_items:
-  - "{{ cloud_init_user_data }}"
-  - "{{ cloud_init_iso_image }}"
-  become: yes
-  delegate_to: "{{ kvm_install_host }}"
+# - name: Clean up cloud init files
+#   file: state=absent path="{{ item }}"
+#   with_items:
+#   - "{{ cloud_init_user_data }}"
+#   - "{{ cloud_init_iso_image }}"
+#   become: yes
+#   delegate_to: "{{ kvm_install_host }}"
 

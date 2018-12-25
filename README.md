@@ -45,8 +45,6 @@ Dependencies
 
 None
 
-
-
 Example Playbook
 ----------------
 ~~~
